@@ -5,7 +5,7 @@ on:
     branches:
       - main
 
-# 1. NEW: Grant the workflow permission to upload to the registry
+# Grant the workflow permission to upload to the GitHub Container Registry
 permissions:
   contents: read
   packages: write
@@ -32,22 +32,23 @@ jobs:
         run: |
           python train.py
 
-      # 2. NEW: Log in to GitHub Container Registry using built-in credentials
-      - name: 5. Log in to GitHub Container Registry
+      - name: 5. Convert GitHub Repository name to lowercase
+        run: |
+          echo "REPO_LC=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: 6. Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 6. Set up Docker Buildx
+      - name: 7. Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 3. UPDATED: Build and actually push the container to GHCR
-      - name: 7. Build and Push the Docker Container
+      - name: 8. Build and Push the Docker Container
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          # This dynamically creates the URL: ghcr.io/your-username/your-repo-name/mlops-api:latest
-          tags: ghcr.io/${{ github.repository }}/mlops-api:latest
+          tags: ghcr.io/${{ env.REPO_LC }}/mlops-api:latest
