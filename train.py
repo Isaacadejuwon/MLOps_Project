@@ -48,3 +48,9 @@ with mlflow.start_run():
     artifact_path = "model_dir/model.joblib"
     joblib.dump(model, artifact_path)
     print(f"Success: Model artifact saved to {artifact_path}")
+
+    # NEW: Save the baseline data for drift monitoring
+    baseline_data = X_train.copy()
+    baseline_data['target'] = y_train # Add the answers so we can track those too
+    baseline_data.to_csv("model_dir/baseline_data.csv", index=False)
+    print("Success: Baseline data saved to model_dir/baseline_data.csv")
